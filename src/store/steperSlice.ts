@@ -148,8 +148,62 @@ export const steperSlice = createSlice({
 
       return (state = { ...state, steps: newSteps });
     },
+    setUpload: (state: StateType, { payload }: PayloadAction<Array<File>>) => {
+      const newSteps = state?.steps?.map((step: Step) =>
+        step?.id === 2
+          ? {
+              ...step,
+              data: { ...step?.data, location_images: payload },
+            }
+          : step,
+      );
+
+      return (state = { ...state, steps: newSteps });
+    },
+    setRemuveFile: (state: StateType, { payload }: PayloadAction<number>) => {
+      const newSteps = state?.steps?.map((step: Step) =>
+        step?.id === 2
+          ? {
+              ...step,
+              data: {
+                ...step?.data,
+                location_images: step?.data?.location_images?.filter(
+                  (file: File, i: number) => i !== payload,
+                ),
+              },
+            }
+          : step,
+      );
+
+      return (state = { ...state, steps: newSteps });
+    },
+    setLocation: (
+      state: StateType,
+      { payload }: PayloadAction<{ key: string; value: number }>,
+    ) => {
+      const newSteps = state?.steps?.map((step: Step) =>
+        step?.id === 3
+          ? {
+              ...step,
+              data: {
+                ...step?.data,
+                [payload?.key]: payload?.value,
+              },
+            }
+          : step,
+      );
+
+      return (state = { ...state, steps: newSteps });
+    },
   },
 });
 
-export const { setToggle, setSuccess, setChange } = steperSlice.actions;
+export const {
+  setToggle,
+  setChange,
+  setUpload,
+  setSuccess,
+  setLocation,
+  setRemuveFile,
+} = steperSlice.actions;
 export default steperSlice.reducer;

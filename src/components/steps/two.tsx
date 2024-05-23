@@ -20,7 +20,13 @@ import {
 } from "@/components/ui/tooltip";
 import { useDispatch, useSelector } from "react-redux";
 import { State } from "@/store";
-import { setChange, setSuccess, setToggle } from "@/store/steperSlice";
+import {
+  setChange,
+  setRemuveFile,
+  setSuccess,
+  setToggle,
+  setUpload,
+} from "@/store/steperSlice";
 import { formatPhoneNumber } from "@/lib/utils";
 import ImageUpload from "../ui/image-upload";
 
@@ -32,43 +38,21 @@ const Two = () => {
     step: steper?.steps?.find((step) => step.id === steper?.active_step),
   }));
 
-  const store = useSelector((store: State) => store);
-
-  console.log(store);
-
-  const handleChange = useCallback(
-    (e: ChangeEvent<HTMLInputElement>) => {
-      e.currentTarget.type === "tel"
-        ? dispatch(
-            setChange({
-              id: active,
-              key: e.target.name,
-              value: e.target.value.replace(/[^0-9]+/g, "").substring(0, 12),
-            }),
-          )
-        : dispatch(
-            setChange({
-              id: active,
-              key: e.target.name,
-              value: e.target.value,
-            }),
-          );
-    },
-    [active, dispatch],
-  );
-
   const handleSubmit = () => {
-    const isSuccess =
-      step?.data?.name?.length > 0 &&
-      step?.data?.phone?.length > 0 &&
-      step?.data?.main_phone?.length > 0;
-
-    if (isSuccess) {
+    if (step?.data?.location_images?.length > 0) {
       dispatch(setSuccess({ id: active, success: true }));
       dispatch(setToggle(active + 1));
     } else {
       dispatch(setSuccess({ id: active, success: false }));
     }
+  };
+
+  const handleUpload = (files: Array<File>) => {
+    dispatch(setUpload(files));
+  };
+
+  const handleRemuve = (index: number) => {
+    dispatch(setRemuveFile(index));
   };
 
   return (
@@ -101,28 +85,36 @@ const Two = () => {
         </CardTitle>
       </CardHeader>
       <CardContent className="w-full grid grid-cols-3 gap-5 max-xl:grid-cols-2 max-sm:grid-cols-1">
-        <ImageUpload />
+        <ImageUpload error={step?.success === false} onDrop={handleUpload} />
 
-        <div className="w-full h-full relative">
-          <Image
-            src="/upload.png"
-            alt="Logo"
-            width="0"
-            height="0"
-            sizes="100%"
-            className="size-full mb-5"
-          />
-          <button className="w-4 h-4 p-2 box-content absolute top-3 right-3 bg-white rounded-full">
+        {step?.data?.location_images?.map((img: File, i: number) => (
+          <div
+            key={i}
+            className="w-auto h-auto max-w-[300px] max-h-[200px] mx-auto relative rounded-2xl overflow-hidden"
+          >
             <Image
-              src="/delete.svg"
+              src={img ? URL.createObjectURL(img) : "/upload.png"}
               alt="Logo"
               width="0"
               height="0"
               sizes="100%"
-              className="size-full mb-5"
+              className="size-full mb-5 flex"
             />
-          </button>
-        </div>
+            <button
+              className="w-4 h-4 p-2 box-content absolute top-3 right-3 bg-white rounded-full"
+              onClick={() => handleRemuve(i)}
+            >
+              <Image
+                src="/delete.svg"
+                alt="Logo"
+                width="0"
+                height="0"
+                sizes="100%"
+                className="size-full mb-5"
+              />
+            </button>
+          </div>
+        ))}
       </CardContent>
       <CardFooter className="w-full flex items-center justify-end mt-5">
         <Button className="flex items-center gap-2" onClick={handleSubmit}>
